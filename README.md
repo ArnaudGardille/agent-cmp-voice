@@ -2,11 +2,17 @@
 
 Agent vocal de confirmation de livraison CMP — appels sortants automatisés via AWS Connect + Nova Sonic 2, avec analyse post-appel par LLM et mise à jour SQL contrôlée.
 
+```mermaid
+flowchart LR
+    SQL[(Base SQL CMP)] --> Rules[Moteur de règles]
+    Rules --> Connect[AWS Connect]
+    Connect --> Nova[Nova Sonic 2]
+    Nova --> LLM[Agent post-appel LLM]
+    LLM --> Valid[Validation métier]
+    Valid --> SQL
 ```
-Base SQL CMP → Moteur de règles → Fiche d'appel → AWS Connect → Nova Sonic 2
-                                                                      │
-                                          Base SQL CMP ← Validation ← Agent post-appel ← Transcript
-```
+
+Specs détaillées : [`doc/spec-user.md`](doc/spec-user.md) · [`doc/spec-tech.md`](doc/spec-tech.md)
 
 ## Setup
 

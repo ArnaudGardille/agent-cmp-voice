@@ -19,6 +19,12 @@ Agent vocal de confirmation de livraison CMP, construit sur AWS Connect + Nova S
 - Installer les dépendances : `pip install -r requirements.txt`
 - Config env : `cp .env.example .env` puis éditer
 
+## Région AWS cible
+
+- **Région de déploiement : `eu-north-1` (Stockholm)** pour ce POC et pour la solution finale CMP.
+- Nova Sonic 2 (`amazon.nova-sonic-v1:0`) fonctionne correctement en `eu-north-1` — utiliser cette région pour tous les appels Bedrock Nova Sonic.
+- `AWS_DEFAULT_REGION=eu-north-1` doit être défini dans `.env` et dans tous les scripts/Terraform.
+
 ## AWS accounts & auth
 
 - **Compte dev personnel (Arnaud)** : compte AWS personnel utilisé pour le développement itératif du runtime AWS uniquement. Accès complet ; auth via `aws login`. Déploiement via `scripts/deploy.sh` (Docker build → ECR → Terraform avec `terraform/env/personal.tfvars`).
@@ -28,11 +34,22 @@ Agent vocal de confirmation de livraison CMP, construit sur AWS Connect + Nova S
 
 ## Flux de traitement
 
+```mermaid
+flowchart LR
+    SQL[(Base SQL CMP)] --> Rules[Moteur de règles]
+    Rules --> Connect[AWS Connect]
+    Connect --> Nova[Nova Sonic 2]
+    Nova --> Analysis[Agent post-appel LLM]
+    Analysis --> Valid[Validation métier]
+    Valid --> Buffer[(Table tampon)]
+    Buffer --> SQL
 ```
-Base SQL CMP → Moteur de règles → Fiche d'appel → AWS Connect → Nova Sonic 2
-                                                                      │
-                                          Base SQL CMP ← Validation ← Agent post-appel ← Transcript
-```
+
+Phases :
+1. **Préparation** — lecture SQL → règles métier → fiche d'appel → `pending_call`
+2. **Appel** — AWS Connect → Nova Sonic 2 → transcript + résultat brut
+3. **Analyse** — LLM post-appel → résultat structuré + `confidence_score`
+4. **Mise à jour** — validation déterministe → table tampon → SQL si conditions remplies, sinon `human_review_required`
 
 Le principe clé est de ne jamais écrire en SQL directement depuis l'agent vocal. L'écriture passe toujours par l'agent d'analyse post-appel + la couche de validation + la table tampon.
 

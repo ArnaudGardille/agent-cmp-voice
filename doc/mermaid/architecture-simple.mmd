@@ -1,0 +1,49 @@
+%%{init: {
+  "theme": "base",
+  "flowchart": {
+    "htmlLabels": false,
+    "curve": "basis",
+    "nodeSpacing": 80,
+    "rankSpacing": 95
+  },
+  "themeVariables": {
+    "fontFamily": "Inter, Arial, sans-serif",
+    "fontSize": "34px",
+    "primaryTextColor": "#172033",
+    "lineColor": "#5B6472",
+    "clusterBkg": "#FFFFFF",
+    "clusterBorder": "#FFFFFF",
+    "edgeLabelBackground": "#FFFFFF"
+  }
+}}%%
+
+flowchart LR
+    SQL[("`**Base SQL CMP**<br/>Commandes<br/>éligibles`")]
+    Rules["`**Moteur de règles**<br/>Sélection<br/>préparation`"]
+    Call["`**Appel automatisé**<br/>AWS Connect<br/>+ Nova Sonic 2`"]
+    Trace[("`**Traçabilité**<br/>Statuts<br/>transcripts`")]
+    Analyze["`**Analyse post-appel**<br/>Extraction structurée<br/>score de confiance`"]
+    Decision{"`**Validation métier**`"}
+    Action["`**Action contrôlée**<br/>Mise à jour SQL<br/>ou revue humaine`"]
+
+    SQL --> Rules
+    Rules --> Call
+    Call --> Trace
+    Trace --> Analyze
+    Analyze --> Decision
+    Decision --> Action
+    Action -.-> SQL
+
+    classDef data fill:#EEF4FF,stroke:#4F6DF5,stroke-width:4px,color:#172033;
+    classDef process fill:#F3F7F0,stroke:#4F8A4F,stroke-width:4px,color:#172033;
+    classDef voice fill:#FFF3E6,stroke:#E27622,stroke-width:4px,color:#172033;
+    classDef trace fill:#F4EEFF,stroke:#8B5CF6,stroke-width:4px,color:#172033;
+    classDef decision fill:#FFF7D6,stroke:#D9A400,stroke-width:5px,color:#172033;
+    classDef action fill:#FDECEC,stroke:#D65A5A,stroke-width:4px,color:#172033;
+
+    class SQL data;
+    class Rules process;
+    class Call voice;
+    class Trace,Analyze trace;
+    class Decision decision;
+    class Action action;
